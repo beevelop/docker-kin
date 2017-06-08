@@ -1,0 +1,37 @@
+traefik:
+  container_name: traefik
+  image: traefik
+  environment:
+    CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL}
+    CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY}
+  ports: ["80:80", "443:443"]
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./traefik.toml:/traefik.toml
+    - ./acme/:/etc/traefik/acme/
+    - ./certs/:/certs/
+  restart: always
+
+server:
+  image: beevelop/kin-server
+  env_file: kin.env
+  environment:
+    API_HOSTNAME: ${API_SERVER}
+    STATIC_HOSTNAME: ${WEB_CLIENT}
+  labels:
+    - "traefik.enable=true"
+    - "traefik.backend=kin-server"
+    - "traefik.frontend.rule=Host:${API_SERVER}"
+    - "traefik.port=8080"
+    - "traefik.protocol=https"
+
+client:
+  image: beevelop/kin-client
+  environment:
+    API_HOSTNAME: ${API_SERVER}
+  labels:
+    - "traefik.enable=true"
+    - "traefik.backend=kin-client"
+    - "traefik.frontend.rule=Host:${WEB_CLIENT}"
+    - "traefik.port=8080"
+    - "traefik.protocol=https"

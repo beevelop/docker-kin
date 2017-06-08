@@ -1,0 +1,34 @@
+graceTimeOut = 7
+checkNewVersion = false
+logLevel = "ERROR"
+ProvidersThrottleDuration = 5
+defaultEntryPoints = ["http", "https"]
+InsecureSkipVerify = true
+
+[acme]
+email = "admin@example.com"
+storageFile = "/etc/traefik/acme/acme.json"
+entryPoint = "https"
+dnsProvider = "cloudflare"
+onDemand = true
+OnHostRule = true
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+  compress = false
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  compress = false
+    [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+      CertFile = "/certs/traefik.crt"
+      KeyFile = "/certs/traefik.key"
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "example.com"
+watch = true
+exposedbydefault = false
